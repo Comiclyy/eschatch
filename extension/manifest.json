@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "Escape Hatch",
+  "version": "1.0.0",
+  "description": "Route specific sites through a proxy without staying on a full VPN.",
+  "permissions": ["storage", "proxy", "tabs", "scripting", "webNavigation"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Escape Hatch: toggle proxy for this site",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_popup": "popup.html"
+  },
+  "options_page": "options.html",
+  "commands": {
+    "toggle-site": {
+      "description": "Add/remove the current site from the proxy list"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

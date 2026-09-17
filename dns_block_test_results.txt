@@ -1,0 +1,71 @@
+===== DNS Block Test =====
+Date: Mon 14 Sep 2026 10:03:33 EDT
+Network: You are not associated with an AirPort network.
+
+--- Current system DNS resolution of 1.1.1.1 (reverse) ---
+Server:		172.23.2.10
+Address:	172.23.2.10#53
+
+Non-authoritative answer:
+1.1.1.1.in-addr.arpa	name = one.one.one.one.
+
+Authoritative answers can be found from:
+
+
+--- Can we resolve example.com via system DNS at all? ---
+Server:		172.23.2.10
+Address:	172.23.2.10#53
+
+Non-authoritative answer:
+Name:	example.com
+Address: 172.66.147.243
+Name:	example.com
+Address: 104.20.23.154
+
+
+--- 1.1.1.1 DoH endpoint (HTTPS, port 443) ---
+HTTP 301, time 0.051402s
+
+--- 1.0.0.1 (secondary) ---
+HTTP 301, time 0.081153s
+
+--- DoH query test: resolve example.com via Cloudflare DoH ---
+{"Status":0,"TC":false,"RD":true,"RA":true,"AD":false,"CD":false,"Question":[{"name":"example.com","type":1}],"Answer":[{"name":"example.com","type":1,"TTL":236,"data":"104.20.23.154"},{"name":"example.com","type":1,"TTL":236,"data":"172.66.147.243"}]}
+
+--- Plain UDP/53 DNS query to 1.1.1.1 (dig) ---
+
+; <<>> DiG 9.10.6 <<>> +time=3 +tries=1 @1.1.1.1 example.com
+; (1 server found)
+;; global options: +cmd
+;; connection timed out; no servers could be reached
+
+--- Plain UDP/53 DNS query to 8.8.8.8 (Google, for comparison) ---
+example.com.		300	IN	A	172.66.147.243
+example.com.		300	IN	A	104.20.23.154
+
+;; Query time: 23 msec
+;; SERVER: 8.8.8.8#53(8.8.8.8)
+;; WHEN: Mon Sep 14 10:03:37 EDT 2026
+;; MSG SIZE  rcvd: 72
+
+
+--- Cloudflare WARP registration endpoint (engage.cloudflareclient.com) ---
+curl: (28) Connection timed out after 5010 milliseconds
+HTTP 000, time 5.010862s
+
+--- WARP UDP endpoint reachability (port 2408, via nc) ---
+Connection to 162.159.192.1 port 2408 [udp/optimanet] succeeded!
+
+--- DoH via Google (8.8.8.8) for comparison ---
+HTTP 302, time 0.056423s
+
+--- Traceroute to 1.1.1.1 (first 8 hops, may reveal where it's blocked) ---
+traceroute to 1.1.1.1 (1.1.1.1), 8 hops max, 40 byte packets
+ 1  * * *
+ 2  * * *
+ 3  * * *
+ 4  * * *
+ 5  * * *
+ 6  one.one.one.one (1.1.1.1)  9.946 ms  8.747 ms  8.011 ms
+
+===== End of test =====

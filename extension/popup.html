@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        width: 260px;
+        padding: 12px;
+        margin: 0;
+      }
+      h1 {
+        font-size: 14px;
+        margin: 0 0 8px;
+      }
+      #domain {
+        font-weight: 600;
+        word-break: break-all;
+      }
+      #status {
+        margin: 8px 0;
+        font-size: 13px;
+        color: #555;
+      }
+      button {
+        width: 100%;
+        padding: 8px;
+        font-size: 13px;
+        cursor: pointer;
+      }
+      #no-config {
+        font-size: 12px;
+        color: #a33;
+        margin-top: 8px;
+      }
+      a {
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Escape Hatch</h1>
+    <div id="domain">loading...</div>
+    <div id="status"></div>
+    <button id="toggle-btn">Toggle proxy for this site</button>
+    <div id="no-config" hidden>
+      No proxy endpoint set. <a href="#" id="open-options">Open options</a>
+    </div>
+  </body>
+  <script src="common.js"></script>
+  <script src="popup.js"></script>
+</html>

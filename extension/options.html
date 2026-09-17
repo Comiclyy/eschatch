@@ -1,0 +1,168 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Escape Hatch Options</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        max-width: 480px;
+        margin: 24px auto;
+        padding: 0 16px;
+        color: #222;
+      }
+      h1 {
+        font-size: 18px;
+      }
+      h2 {
+        font-size: 14px;
+        margin-top: 28px;
+      }
+      label {
+        display: block;
+        font-size: 12px;
+        color: #555;
+        margin-top: 10px;
+      }
+      input,
+      select {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 6px 8px;
+        font-size: 13px;
+        margin-top: 2px;
+      }
+      #proxy-row {
+        display: flex;
+        gap: 8px;
+      }
+      #proxy-row > div {
+        flex: 1;
+      }
+      #proxy-row input[name="proxyPort"] {
+        width: 90px;
+      }
+      button {
+        margin-top: 12px;
+        padding: 6px 14px;
+        font-size: 13px;
+        cursor: pointer;
+      }
+      ul#domain-list {
+        list-style: none;
+        padding: 0;
+        margin-top: 8px;
+      }
+      ul#domain-list li {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 0;
+        border-bottom: 1px solid #eee;
+        font-size: 13px;
+      }
+      ul#domain-list li button {
+        margin: 0;
+        padding: 2px 8px;
+        font-size: 12px;
+      }
+      #add-domain-row {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      #add-domain-row input {
+        flex: 1;
+      }
+      #saved-msg {
+        color: #2a7;
+        font-size: 12px;
+        margin-left: 8px;
+        opacity: 0;
+        transition: opacity 0.2s;
+      }
+      #saved-msg.show {
+        opacity: 1;
+      }
+      #empty-msg {
+        font-size: 12px;
+        color: #888;
+      }
+      #log-box {
+        background: #111;
+        color: #ddd;
+        font-family: ui-monospace, monospace;
+        font-size: 11px;
+        padding: 8px;
+        height: 200px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+        word-break: break-all;
+        border-radius: 4px;
+        margin-top: 8px;
+      }
+      #log-box .cat-NAV-ERROR,
+      #log-box .cat-PROXY-ERROR {
+        color: #ff8080;
+      }
+      #log-box .cat-NAV {
+        color: #7ec9ff;
+      }
+      #log-box .cat-PROXY {
+        color: #ffd479;
+      }
+      #log-box .cat-DOMAIN {
+        color: #9fe89f;
+      }
+      #log-box .cat-TOGGLE {
+        color: #d9b3ff;
+      }
+      #log-actions {
+        display: flex;
+        gap: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Escape Hatch</h1>
+
+    <h2>Proxy endpoint</h2>
+    <div id="proxy-row">
+      <div>
+        <label for="proxyScheme">Type</label>
+        <select id="proxyScheme">
+          <option value="socks5">SOCKS5</option>
+          <option value="http">HTTP</option>
+          <option value="https">HTTPS</option>
+        </select>
+      </div>
+      <div>
+        <label for="proxyHost">Host</label>
+        <input id="proxyHost" type="text" placeholder="1.2.3.4 or example.com" />
+      </div>
+      <div>
+        <label for="proxyPort">Port</label>
+        <input id="proxyPort" type="number" min="1" max="65535" placeholder="1080" />
+      </div>
+    </div>
+    <button id="save-proxy-btn">Save endpoint</button>
+    <span id="saved-msg">Saved</span>
+
+    <h2>Proxied domains</h2>
+    <p id="empty-msg" hidden>No domains added yet.</p>
+    <ul id="domain-list"></ul>
+    <div id="add-domain-row">
+      <input id="new-domain" type="text" placeholder="example.com" />
+      <button id="add-domain-btn">Add</button>
+    </div>
+
+    <h2>Log</h2>
+    <div id="log-box"></div>
+    <div id="log-actions">
+      <button id="clear-log-btn">Clear log</button>
+      <button id="copy-log-btn">Copy log</button>
+    </div>
+  </body>
+  <script src="common.js"></script>
+  <script src="options.js"></script>
+</html>
