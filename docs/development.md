@@ -106,6 +106,20 @@ send '{"cmd":"doctor"}'
   - monospace for anything technical
   - new colours go in `ui.css` as tokens, not inline
 
+## Commit authorship
+
+- Commits you make: **comiclyy**, from the repo's `.gitconfig`.
+- Commits Claude Code makes: **comiclyy-c**. `.claude/settings.json` sets
+  `GIT_AUTHOR_NAME` / `GIT_COMMITTER_NAME` for commands Claude runs, and those
+  override the config.
+
+Both use the same GitHub no-reply email. Git doesn't load a tracked config
+file by itself, so after cloning, enable it once:
+
+```sh
+git config include.path ../.gitconfig
+```
+
 ## Paths
 
 Nothing hardcodes the repo location:
