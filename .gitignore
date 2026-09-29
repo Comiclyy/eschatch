@@ -4,3 +4,5 @@ scripts/tunnel.env
 codespace-repo/
 native-host/netproxy_host
 tools/preview/out/
+__pycache__/
+.claude/

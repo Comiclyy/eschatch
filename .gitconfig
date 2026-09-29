@@ -1,9 +1,9 @@
 # Repo-local git identity for commits you make yourself.
 # Not loaded automatically: enable once per clone with
 #   git config include.path ../.gitconfig
-# Commits made by Claude Code use "comiclyy-c" instead — see
-# .claude/settings.json, which overrides the name via GIT_AUTHOR_NAME /
-# GIT_COMMITTER_NAME for commands Claude runs.
+# Commits made by Claude Code use "comiclyy-c" instead: a local (gitignored)
+# .claude/settings.json overrides the name via GIT_AUTHOR_NAME /
+# GIT_COMMITTER_NAME for commands Claude runs. See docs/development.md.
 [user]
 	name = comiclyy
 	email = 93946611+Comiclyy@users.noreply.github.com

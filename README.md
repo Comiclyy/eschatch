@@ -1,111 +1,234 @@
-# eschatch
+<div align="center">
 
-Escape Hatch: a browser extension that routes specific sites through a SOCKS5
-proxy, plus the scripts/infra used to stand up that proxy.
+<img src="extension/icons/icon128.png" width="104" alt="Escape Hatch logo" />
 
-## Layout
+# Escape Hatch
 
-- `extension/` — the "Escape Hatch" Manifest V3 browser extension:
-  - `popup.html`/`popup.js` — the toolbar popup: route the current site
-    through the proxy, start/stop the proxy server.
-  - `options.html`/`options.js`/`admin.js` — the full-page dashboard
-    (Overview, Sites, Server, Diagnostics, Logs, and a developer Admin tab).
-  - `background.js` — applies the proxy rules, talks to the native host,
-    watches server health, badge and notifications.
-  - `ui.css` (shared components) / `dashboard.css` (dashboard layout).
-- `scripts/` — helpers for running the SOCKS5 endpoint the extension talks to:
-  - `start-tunnel.sh` / `stop-tunnel.sh` / `test-tunnel.sh` — open, close, and
-    check a local SOCKS5 proxy (`127.0.0.1:1080`) tunneled over SSH to a VPS.
-    Configure via `tunnel.env` (copy from `tunnel.env.example`).
-  - `codespace-start.sh` / `codespace-stop.sh` / `codespace-test.sh` /
-    `codespace-netlog.sh` — same idea, but backed by the `Comiclyy/escapehatch-proxy`
-    GitHub Codespace (see `codespace-repo/` below) instead of a VPS.
-  - `lib.sh` — shared logging helper (writes to `logs/netproxy.log`).
-  - `netproxy` — CLI wrapper (`netproxy start|stop|test|status|log|sitelog|netlog`).
-    Symlink it onto your PATH: `ln -s "$PWD/scripts/netproxy" ~/bin/netproxy`.
-- `native-host/` — native messaging host (`netproxy_host.py`) that lets the
-  extension start/stop/test the proxy server and read `logs/netproxy.log`.
-  Register it once with `native-host/install.sh <extension-id>`.
-  `fault-job.sh` is the stand-in script used by the Admin tab's fault injection.
-- `tools/preview/shoot.sh` — renders the popup and every dashboard view to PNGs
-  with headless Chrome (fake `chrome.*` API in `stub.js`), for reviewing UI
-  changes without loading the extension.
-- `tools/test/background-sim*.js` — runs `background.js` against a fake
-  browser and helper and checks what the user would see. Run with macOS's
-  JavaScriptCore (command at the top of `background-sim.js`).
-- `vps-setup/setup-vps.sh` — one-time setup script to run on a fresh VPS
-  (e.g. Oracle Cloud free tier) to create a restricted tunnel-only SSH user
-  and make sshd also listen on 443, so the tunnel can blend in on networks
-  that block port 22.
-- `codespace-repo/` — a separate git repository/checkout (remote:
-  `github.com/Comiclyy/escapehatch-proxy`) holding the devcontainer that runs
-  the SOCKS5 proxy used by `codespace-*.sh`. It's excluded from this repo via
-  `.gitignore` since it's already tracked and pushed on its own.
-- `dns_block_test.sh` — standalone script to check whether a network blocks
-  DNS-over-HTTPS/Cloudflare endpoints (useful for diagnosing why a network
-  needs the escape hatch in the first place).
+**Route only the sites you choose through your own SOCKS5 proxy.<br/>Everything else stays direct.**
 
-Full documentation: [`docs/`](docs/README.md) — setup, features, how it
-works, errors & troubleshooting, the Admin tab, and development.
+[![Manifest V3](https://img.shields.io/badge/Manifest-V3-4d8dff?style=flat-square&logo=googlechrome&logoColor=white)](extension/manifest.json)
+[![Vivaldi](https://img.shields.io/badge/Vivaldi-supported-ef3939?style=flat-square&logo=vivaldi&logoColor=white)](docs/setup.md)
+[![Chrome](https://img.shields.io/badge/Chrome-supported-4285f4?style=flat-square&logo=googlechrome&logoColor=white)](docs/setup.md)
+[![Arc](https://img.shields.io/badge/Arc-supported-5b5bd6?style=flat-square&logo=arc&logoColor=white)](docs/setup.md)
+[![Edge & Chromium](https://img.shields.io/badge/Edge%20%26%20Chromium-supported-4587f4?style=flat-square)](docs/setup.md)
+[![Brave](https://img.shields.io/badge/Brave-supported-fb542b?style=flat-square&logo=brave&logoColor=white)](docs/setup.md)
+<br/>
+[![macOS](https://img.shields.io/badge/macOS-000000?style=flat-square&logo=apple&logoColor=white)](docs/setup.md)
+[![Python 3](https://img.shields.io/badge/helper-Python%203-3776ab?style=flat-square&logo=python&logoColor=white)](native-host/netproxy_host.py)
+[![GitHub Codespaces](https://img.shields.io/badge/backend-Codespaces-181717?style=flat-square&logo=github&logoColor=white)](docs/setup.md#github-codespace-default)
+[![SSH tunnel](https://img.shields.io/badge/backend-SSH%20tunnel-56c28a?style=flat-square&logo=gnubash&logoColor=white)](docs/setup.md#ssh-tunnel-to-a-vps)
 
-## Usage
+[**Setup**](docs/setup.md) &nbsp;·&nbsp; [**Features**](docs/features.md) &nbsp;·&nbsp; [**How it works**](docs/how-it-works.md) &nbsp;·&nbsp; [**Troubleshooting**](docs/errors.md) &nbsp;·&nbsp; [**All docs**](docs/README.md)
 
-1. Load `extension/` as an unpacked extension (`chrome://extensions`,
-   `vivaldi://extensions`, … → Developer mode → Load unpacked).
-2. Bring up a SOCKS5 proxy at `127.0.0.1:1080` with either:
-   - `scripts/start-tunnel.sh` (direct SSH tunnel to your own VPS — set up the
-     VPS first with `vps-setup/setup-vps.sh`), or
-   - `scripts/codespace-start.sh` (spins up/reuses the GitHub Codespace in
-     `codespace-repo/` instead).
-3. In the dashboard's **Server** tab, set the endpoint to SOCKS5
-   `127.0.0.1:1080`, then use the toolbar popup to route sites through it.
+<br/>
 
-### Starting the server from the browser
+<img src="docs/images/dashboard.png" width="860" alt="Escape Hatch dashboard, Overview tab" />
 
-Instead of running the scripts by hand, register the native host once:
+</div>
+
+<br/>
+
+## ✨ Features
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+🎯 **Per-site routing**<br/>
+One click in the toolbar routes the current site (and its subdomains) through
+the proxy. Everything else keeps its normal, direct connection.
+
+</td>
+<td width="50%" valign="top">
+
+🚀 **One-click server**<br/>
+Start, stop, test or cancel the proxy from the browser, backed by a GitHub
+Codespace or your own VPS over SSH. No terminal needed.
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+🩺 **Diagnostics that say what to do**<br/>
+Checks every link from browser to proxy, including a real SOCKS5 handshake
+and other extensions hijacking the proxy, with a fix for each problem.
+
+</td>
+<td valign="top">
+
+🔔 **Badge & notifications**<br/>
+<code>ON</code> / <code>OFF</code> / <code>…</code> / <code>!</code> on the
+toolbar icon, and desktop alerts when a start fails or the proxy drops
+unexpectedly.
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+💾 **Settings survive reinstalls**<br/>
+Sites and settings are backed up outside the browser and restored
+automatically after an uninstall. Import/export included.
+
+</td>
+<td valign="top">
+
+🧪 **Admin tab for testing**<br/>
+Fake server states, helper crashes, failed starts, log floods and
+notifications to check error handling without breaking anything.
+
+</td>
+</tr>
+</table>
+
+## 📸 Screenshots
+
+<table>
+<tr>
+<td align="center" valign="top" width="34%">
+<img src="docs/images/popup.png" width="300" alt="Toolbar popup" /><br/>
+<sub><b>Toolbar popup</b> — route this site, start/stop the server</sub>
+</td>
+<td align="center" valign="top">
+<img src="docs/images/diagnostics.png" alt="Diagnostics tab" /><br/>
+<sub><b>Diagnostics</b> — every check, with a fix for what's broken</sub>
+</td>
+</tr>
+</table>
+
+<details>
+<summary><b>More screenshots</b> — Logs, Admin</summary>
+<br/>
+
+<img src="docs/images/logs.png" alt="Logs tab" /><br/>
+<sub><b>Logs</b> — filter by category, search, download everything for a bug report</sub>
+
+<br/><br/>
+
+<img src="docs/images/admin.png" alt="Admin tab" /><br/>
+<sub><b>Admin</b> — simulate states and faults to test error handling</sub>
+
+</details>
+
+## 🚀 Quick start
+
+**1. Load the extension.** Open `vivaldi://extensions` (or `chrome://`,
+`edge://`, …), turn on **Developer mode**, click **Load unpacked** and pick the
+`extension/` folder.
+
+**2. Register the server-control helper** (once per browser). The dashboard's
+**Server** tab shows this exact command with a Copy button:
 
 ```sh
-native-host/install.sh <extension-id>   # exact command is on the dashboard's Server tab
+native-host/install.sh opchgdmmkebjdmkcmbfboapbofhjljnm
 ```
 
-then reload the extension. Supports Chrome, Edge, Brave, Chromium, Vivaldi and
-Arc. The popup gets **Start/Stop server** (and "Route through proxy & start
-server" when you add a site while it's down); the dashboard's **Server** tab has
-backend choice, Start/Stop/Test/Cancel and a live tail of `logs/netproxy.log`.
-Server output is also streamed into the extension's log as `SERVER` /
-`SERVER-ERROR` entries.
+**3. Pick a backend** on the Server tab:
 
-### When something goes wrong
+| | Backend | You need |
+| :-: | --- | --- |
+| <img src="https://cdn.simpleicons.org/github/8b949e" width="16" /> | **GitHub Codespace** *(default)* | `brew install gh` then `gh auth login --web -s codespace` |
+| <img src="https://cdn.simpleicons.org/gnubash" width="16" /> | **SSH tunnel to a VPS** | Run `vps-setup/setup-vps.sh` on the server, then fill in `scripts/tunnel.env` |
 
-- **Toolbar badge:** `ON` = proxy up, `OFF` = sites are in the list but the
-  proxy is down (they won't load), `…` = starting/stopping, `!` = server
-  control can't be reached.
-- **Popup / dashboard** show the problem in plain language with the fix (e.g.
-  "GitHub CLI isn't logged in — run gh auth login ...").
-- **Diagnostics** tab (or "Diagnose" in the popup) checks the
-  helper, proxy endpoint, other extensions overriding the proxy, gh login,
-  tunnel config, the port, and a real SOCKS5 handshake.
-- **Desktop notifications** when a start/stop/test finishes or fails, and
-  when the proxy drops unexpectedly (checked every minute and on proxy errors).
-  Toggle on the Server tab.
-- **Logs** tab: filter/search the extension log, or
-  **Download logs** for one file with config, extension log and server log.
-  On disk: `logs/netproxy.log` (scripts) and `logs/native-host.log` (every
-  time the browser calls the helper — empty means the browser can't find it).
+**4. Point it at the proxy.** Endpoint **SOCKS5** · `127.0.0.1` · `1080`, then **Save**.
 
-### Admin tab (testing error handling)
+**5. Go.** Press **Start**, wait for the green dot, and click **Route through
+proxy** on any site you want to reach.
 
-The dashboard's **Admin** tab (bottom of the sidebar) fakes failures so error
-handling and styling can be checked without breaking anything. A purple
-"Simulated" bar shows on every page while a simulation is active.
+> [!TIP]
+> Something not working? Open the **Diagnostics** tab. Every failing check comes
+> with the fix. Full guide: [Errors & troubleshooting](docs/errors.md).
 
-- **UI state override** — show a canned server state everywhere (running,
-  starting, port open but proxy dead, start failed, helper missing, wrong
-  extension ID, ...). Real health checks pause while it's on.
-- **Helper faults** — make the real helper fail (gh logged out, script exit 1,
-  codespace timeout, slow start, hang, crash, garbage reply, slow replies,
-  status errors). Job faults run `native-host/fault-job.sh` instead of the real
-  scripts, so the actual server isn't touched. Faults expire after 10 minutes.
-- Fire any **notification** or **badge** state, **generate log entries**
-  (bursts, long lines), and trigger the **unexpected drop** / **proxy error**
-  handlers.
+> [!WARNING]
+> If the proxy is down, the browser falls back to a **direct** connection for
+> routed sites. On a network that blocks them they still won't load, but on an
+> open network they'll load *without* the proxy. The badge shows **OFF** when
+> this can happen. [Details](docs/how-it-works.md#routing-sites-through-the-proxy)
+
+## 🧭 How it works
+
+```mermaid
+flowchart LR
+  subgraph Browser["🌐 Browser"]
+    P["Popup"] --> B["background.js"]
+    D["Dashboard"] --> B
+    B -- "PAC rules" --> PX["Proxy settings"]
+  end
+  B <-- "native messaging" --> H["🐍 netproxy helper"]
+  H -- "start / stop / test" --> S["scripts/*.sh"]
+  S -- "gh port-forward · ssh -D" --> SOCKS["🔌 127.0.0.1:1080"]
+  PX -- "listed sites only" --> SOCKS
+  SOCKS --> R["☁️ Codespace / VPS"] --> W(("Internet"))
+
+  classDef ext fill:#16213a,stroke:#4d8dff,color:#e4e6e9
+  classDef helper fill:#132a1f,stroke:#56c28a,color:#e4e6e9
+  classDef proxy fill:#2e2413,stroke:#e0a84a,color:#e4e6e9
+  class P,D,B,PX ext
+  class H,S helper
+  class SOCKS,R proxy
+```
+
+The extension builds proxy rules for the browser from your site list. A small
+local helper (`native-host/`) runs the server scripts for it, because
+extensions can't start programs themselves. The full walkthrough is in
+[How it works](docs/how-it-works.md).
+
+## 🗂️ Repository layout
+
+<details>
+<summary>Show the tree</summary>
+
+```text
+extension/         Manifest V3 extension
+  popup.*            toolbar popup
+  options.* admin.js dashboard: Overview · Sites · Server · Diagnostics · Logs · Admin
+  background.js      proxy rules, helper calls, health checks, badge, notifications
+  ui.css dashboard.css
+native-host/       helper the browser launches (Python) + install.sh + fault-job.sh
+scripts/           server control: codespace-*.sh, *-tunnel.sh, lib.sh, netproxy CLI
+vps-setup/         one-time VPS hardening for the SSH-tunnel backend
+tools/preview/     headless screenshots of every view (shoot.sh)
+tools/test/        background.js simulation tests
+docs/              setup, features, how it works, errors, admin, development
+dns_block_test.sh  checks whether a network blocks DoH / Cloudflare endpoints
+```
+
+`codespace-repo/` (gitignored) is a separate checkout of
+[`Comiclyy/escapehatch-proxy`](https://github.com/Comiclyy/escapehatch-proxy),
+the devcontainer that runs the proxy inside the Codespace.
+
+</details>
+
+## ⌨️ `netproxy` CLI
+
+Prefer a terminal? Link the CLI onto your PATH:
+
+```sh
+ln -s "$PWD/scripts/netproxy" ~/bin/netproxy
+```
+
+| Command | Does |
+| --- | --- |
+| `netproxy start` / `stop` | Bring the Codespace proxy up / shut it down |
+| `netproxy test` | Check traffic exits through the proxy, not your own IP |
+| `netproxy status` | Tunnel and Codespace state |
+| `netproxy log [n]` | Follow `logs/netproxy.log` |
+| `netproxy sitelog` / `netlog` | Follow the proxy's connection log / everything combined |
+
+## 🧑‍💻 Development
+
+```sh
+tools/preview/shoot.sh          # render every view to tools/preview/out/*.png
+tools/preview/shoot.sh --readme # refresh the images in this README
+JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/Current/Helpers/jsc
+$JSC tools/test/background-sim.js extension/common.js extension/background.js tools/test/background-sim-run.js
+```
+
+Conventions, file layout and testing the helper by hand are in
+[Development](docs/development.md).
+
+<div align="center">
+<br/>
+<sub>Made for networks that block too much.</sub>
+</div>
