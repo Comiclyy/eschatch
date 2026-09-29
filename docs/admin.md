@@ -80,7 +80,7 @@ you can always clear them.
 
 - **Notifications:** fire each one (start ok/failed, stopped, test passed,
   unexpected drop). They fire even when notifications are switched off.
-- **Toolbar badge:** set ON / OFF / … / ! / none. The next status check (within
+- **Toolbar badge:** set ON / OFF (red) / OFF (grey) / … / ! / none. The next status check (within
   a minute) puts the real badge back.
 - **Log generator:**
   - one entry of every category

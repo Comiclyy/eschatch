@@ -50,6 +50,12 @@
   check("pending restore completes when helper is back", !stores.local.restorePending && cfg.domains.includes("keep.me") && cfg.domains.includes("new.site"), cfg.domains.join());
   check("backup then includes both old and new sites", host.backup.domains.includes("keep.me") && host.backup.domains.includes("new.site"), JSON.stringify(host.backup.domains));
 
+  // --- Badge with no sites: still shows the proxy is off (grey), not blank.
+  stores.sync = {};
+  host.listening = false;
+  await send({ type: "serverStatus" });
+  check("badge shows OFF even with no sites", badges[badges.length - 1] === "OFF", badges.slice(-3).join(","));
+
   // Reset for the server scenarios below.
   stores.sync = { domains: ["example.com"] };
   stores.local.eventLog = [];

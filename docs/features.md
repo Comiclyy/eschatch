@@ -41,9 +41,10 @@ The badge shows proxy state without opening anything:
 | --- | --- |
 | **ON** (green) | Proxy is up and answering as SOCKS5. |
 | **OFF** (red) | You have sites in the list but the proxy is down. Those sites won't go through the proxy; see [the PAC note](how-it-works.md#routing-sites-through-the-proxy). |
+| **OFF** (grey) | Proxy is down, but no sites are routed, so nothing is affected. |
 | **…** (amber) | A start / stop / test is in progress. |
 | **!** (red) | The extension can't reach the helper; see [Errors](errors.md#server-control-unavailable). |
-| *(none)* | Proxy is down and nothing is routed, so nothing is affected. |
+| *(none)* | Status not checked yet (e.g. right after the browser starts). |
 
 ## Dashboard
 

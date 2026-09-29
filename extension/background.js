@@ -131,6 +131,7 @@ const BADGES = {
   busy: ["…", "#c98a1b"],
   on: ["ON", "#2f8a5b"],
   off: ["OFF", "#d0493e"],
+  idle: ["OFF", "#5f6368"],
   none: ["", "#888888"]
 };
 
@@ -138,9 +139,10 @@ function badgeKind(state, domainCount) {
   if (state?.error) return "error";
   if (state?.job) return "busy";
   if (state?.listening && state.socksOk !== false) return "on";
-  // Sites are routed to a proxy that isn't there — they'll fail to load.
-  if (state && domainCount > 0) return "off";
-  return "none";
+  if (!state) return "none";
+  // Red when sites are routed to a proxy that isn't there (they're affected);
+  // grey when the proxy is simply off and nothing depends on it.
+  return domainCount > 0 ? "off" : "idle";
 }
 
 async function setBadge(kind) {
