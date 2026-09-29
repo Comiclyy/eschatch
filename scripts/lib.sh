@@ -1,5 +1,5 @@
 # Shared logging helper for the netproxy scripts.
-LOG_FILE="/Users/mbymax/Documents/code/networkingproxy/logs/netproxy.log"
+LOG_FILE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/logs/netproxy.log"
 mkdir -p "$(dirname "$LOG_FILE")"
 
 log() {

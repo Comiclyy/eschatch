@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+# netproxy start|stop|test|status|log|sitelog|netlog — Escape Hatch proxy control.
+#
+# Lives in the repo; symlink it onto your PATH, e.g.
+#   ln -s "$PWD/scripts/netproxy" ~/bin/netproxy
+# It resolves the symlink to find the repo, so nothing here hardcodes where
+# the repo is. Uses the codespace backend (the extension's Server tab can
+# also drive the SSH tunnel backend).
+set -euo pipefail
+
+SELF="$(readlink -f "${BASH_SOURCE[0]}")"
+SCRIPTS_DIR="$(dirname "$SELF")"
+LOG_FILE="$(dirname "$SCRIPTS_DIR")/logs/netproxy.log"
+
+usage() {
+  echo "Usage: netproxy {start|stop|test|status|log [lines]|sitelog|netlog}" >&2
+  exit 1
+}
+
+case "${1:-}" in
+  start)
+    exec "$SCRIPTS_DIR/codespace-start.sh"
+    ;;
+  stop)
+    exec "$SCRIPTS_DIR/codespace-stop.sh"
+    ;;
+  test)
+    exec "$SCRIPTS_DIR/codespace-test.sh"
+    ;;
+  status)
+    if [[ -f /tmp/escapehatch-codespace-forward.pid ]] && kill -0 "$(cat /tmp/escapehatch-codespace-forward.pid)" 2>/dev/null; then
+      echo "Tunnel: running (127.0.0.1:1080)"
+    else
+      echo "Tunnel: not running"
+    fi
+    if [[ -f /tmp/escapehatch-codespace-name ]]; then
+      NAME=$(cat /tmp/escapehatch-codespace-name)
+      gh codespace list --json name,state -q ".[] | select(.name==\"$NAME\") | \"Codespace \(.name): \(.state)\""
+    fi
+    ;;
+  log)
+    tail -n "${2:-40}" -f "$LOG_FILE"
+    ;;
+  sitelog)
+    if [[ ! -f /tmp/escapehatch-codespace-name ]]; then
+      echo "No codespace on record — run 'netproxy start' first." >&2
+      exit 1
+    fi
+    NAME=$(cat /tmp/escapehatch-codespace-name)
+    echo "Tailing microsocks connection log on $NAME (Ctrl+C to stop)..."
+    gh codespace ssh -c "$NAME" -- "tail -n 40 -f /tmp/microsocks.log" 2>/dev/null
+    ;;
+  netlog)
+    exec "$SCRIPTS_DIR/codespace-netlog.sh"
+    ;;
+  *)
+    usage
+    ;;
+esac

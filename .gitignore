@@ -2,3 +2,5 @@ logs/
 *.log
 scripts/tunnel.env
 codespace-repo/
+native-host/netproxy_host
+tools/preview/out/

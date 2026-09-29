@@ -2,167 +2,380 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Escape Hatch Options</title>
-    <style>
-      body {
-        font-family: system-ui, sans-serif;
-        max-width: 480px;
-        margin: 24px auto;
-        padding: 0 16px;
-        color: #222;
-      }
-      h1 {
-        font-size: 18px;
-      }
-      h2 {
-        font-size: 14px;
-        margin-top: 28px;
-      }
-      label {
-        display: block;
-        font-size: 12px;
-        color: #555;
-        margin-top: 10px;
-      }
-      input,
-      select {
-        width: 100%;
-        box-sizing: border-box;
-        padding: 6px 8px;
-        font-size: 13px;
-        margin-top: 2px;
-      }
-      #proxy-row {
-        display: flex;
-        gap: 8px;
-      }
-      #proxy-row > div {
-        flex: 1;
-      }
-      #proxy-row input[name="proxyPort"] {
-        width: 90px;
-      }
-      button {
-        margin-top: 12px;
-        padding: 6px 14px;
-        font-size: 13px;
-        cursor: pointer;
-      }
-      ul#domain-list {
-        list-style: none;
-        padding: 0;
-        margin-top: 8px;
-      }
-      ul#domain-list li {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 6px 0;
-        border-bottom: 1px solid #eee;
-        font-size: 13px;
-      }
-      ul#domain-list li button {
-        margin: 0;
-        padding: 2px 8px;
-        font-size: 12px;
-      }
-      #add-domain-row {
-        display: flex;
-        gap: 8px;
-        margin-top: 12px;
-      }
-      #add-domain-row input {
-        flex: 1;
-      }
-      #saved-msg {
-        color: #2a7;
-        font-size: 12px;
-        margin-left: 8px;
-        opacity: 0;
-        transition: opacity 0.2s;
-      }
-      #saved-msg.show {
-        opacity: 1;
-      }
-      #empty-msg {
-        font-size: 12px;
-        color: #888;
-      }
-      #log-box {
-        background: #111;
-        color: #ddd;
-        font-family: ui-monospace, monospace;
-        font-size: 11px;
-        padding: 8px;
-        height: 200px;
-        overflow-y: auto;
-        white-space: pre-wrap;
-        word-break: break-all;
-        border-radius: 4px;
-        margin-top: 8px;
-      }
-      #log-box .cat-NAV-ERROR,
-      #log-box .cat-PROXY-ERROR {
-        color: #ff8080;
-      }
-      #log-box .cat-NAV {
-        color: #7ec9ff;
-      }
-      #log-box .cat-PROXY {
-        color: #ffd479;
-      }
-      #log-box .cat-DOMAIN {
-        color: #9fe89f;
-      }
-      #log-box .cat-TOGGLE {
-        color: #d9b3ff;
-      }
-      #log-actions {
-        display: flex;
-        gap: 8px;
-      }
-    </style>
+    <title>Escape Hatch</title>
+    <link rel="stylesheet" href="ui.css" />
+    <link rel="stylesheet" href="dashboard.css" />
   </head>
-  <body>
-    <h1>Escape Hatch</h1>
+  <body class="preload">
+    <div class="app">
+      <nav class="sidebar">
+        <div class="brand">
+          <img src="icons/icon48.png" alt="" />
+          <div>
+            <div class="brand-name">Escape Hatch</div>
+            <div class="brand-sub mono" id="brand-version"></div>
+          </div>
+        </div>
 
-    <h2>Proxy endpoint</h2>
-    <div id="proxy-row">
-      <div>
-        <label for="proxyScheme">Type</label>
-        <select id="proxyScheme">
-          <option value="socks5">SOCKS5</option>
-          <option value="http">HTTP</option>
-          <option value="https">HTTPS</option>
-        </select>
-      </div>
-      <div>
-        <label for="proxyHost">Host</label>
-        <input id="proxyHost" type="text" placeholder="1.2.3.4 or example.com" />
-      </div>
-      <div>
-        <label for="proxyPort">Port</label>
-        <input id="proxyPort" type="number" min="1" max="65535" placeholder="1080" />
-      </div>
-    </div>
-    <button id="save-proxy-btn">Save endpoint</button>
-    <span id="saved-msg">Saved</span>
+        <div class="nav">
+          <a href="#overview" data-view="overview"><kbd>1</kbd>Overview<span class="nav-meta"><span class="dot" id="nav-server-dot"></span></span></a>
+          <a href="#sites" data-view="sites"><kbd>2</kbd>Sites<span class="nav-meta mono" id="nav-sites-count"></span></a>
+          <a href="#server" data-view="server"><kbd>3</kbd>Server</a>
+          <a href="#diagnostics" data-view="diagnostics"><kbd>4</kbd>Diagnostics<span class="nav-meta mono" id="nav-diag"></span></a>
+          <a href="#logs" data-view="logs"><kbd>5</kbd>Logs<span class="nav-meta mono err" id="nav-log-errors"></span></a>
+        </div>
 
-    <h2>Proxied domains</h2>
-    <p id="empty-msg" hidden>No domains added yet.</p>
-    <ul id="domain-list"></ul>
-    <div id="add-domain-row">
-      <input id="new-domain" type="text" placeholder="example.com" />
-      <button id="add-domain-btn">Add</button>
-    </div>
+        <div class="nav nav-bottom">
+          <a href="#admin" data-view="admin">Admin<span class="nav-meta"><span class="tag warn" id="nav-sim" hidden>SIM</span><span class="tag">Dev</span></span></a>
+        </div>
+        <div class="sidebar-foot mono" id="ext-id" title="Extension ID"></div>
+      </nav>
 
-    <h2>Log</h2>
-    <div id="log-box"></div>
-    <div id="log-actions">
-      <button id="clear-log-btn">Clear log</button>
-      <button id="copy-log-btn">Copy log</button>
+      <main>
+        <!-- Shown on every view while a simulation is active. -->
+        <div id="sim-bar" class="sim-bar" hidden>
+          <span class="tag warn">Simulated</span>
+          <span id="sim-bar-text"></span>
+          <a href="#admin">Admin</a>
+          <button class="btn small" id="sim-bar-clear">Clear all</button>
+        </div>
+
+        <!-- ============ Overview ============ -->
+        <section class="view" data-view="overview">
+          <header class="view-head">
+            <div>
+              <h1>Overview</h1>
+              <p>What's being proxied and whether the proxy server is up.</p>
+            </div>
+            <button class="btn" id="refresh-btn">Refresh</button>
+          </header>
+
+          <div class="problem callout err" hidden>
+            <div>
+              <div class="title problem-title"></div>
+              <div class="fix problem-fix"></div>
+            </div>
+          </div>
+
+          <div class="stats">
+            <div class="stat">
+              <div class="label">Server</div>
+              <div class="stat-value"><span class="dot server-dot"></span><span id="stat-server"></span></div>
+            </div>
+            <div class="stat">
+              <div class="label">Routing</div>
+              <div class="stat-value"><span id="stat-sites"></span></div>
+            </div>
+            <div class="stat">
+              <div class="label">Endpoint</div>
+              <div class="stat-value mono" id="stat-endpoint"></div>
+            </div>
+            <div class="stat">
+              <div class="label">Checked</div>
+              <div class="stat-value mono" id="stat-checked"></div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="panel">
+              <div class="panel-head">
+                <span class="label">Proxy server</span>
+                <a href="#server" class="panel-link">Configure</a>
+              </div>
+              <dl class="kv" id="overview-kv"></dl>
+              <div class="actions">
+                <button class="btn primary" data-action="start">Start</button>
+                <button class="btn danger" data-action="stop">Stop</button>
+                <button class="btn" data-action="test">Test</button>
+                <button class="btn" data-action="cancel">Cancel</button>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="panel-head">
+                <span class="label">Recent activity</span>
+                <a href="#logs" class="panel-link">All logs</a>
+              </div>
+              <div class="activity" id="activity"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ Sites ============ -->
+        <section class="view" data-view="sites">
+          <header class="view-head">
+            <div>
+              <h1>Sites</h1>
+              <p>Only these domains (and their subdomains) go through the proxy. Everything else connects directly.</p>
+            </div>
+            <div class="head-actions">
+              <button class="btn" id="import-btn" title="Load sites and settings from an exported file">Import…</button>
+              <button class="btn" id="export-btn" title="Save sites and settings to a file">Export</button>
+              <input type="file" id="import-file" accept="application/json,.json" hidden />
+            </div>
+          </header>
+
+          <form class="add-row" id="add-domain-form">
+            <input id="new-domain" class="input mono" type="text" placeholder="example.com or https://example.com/page" autocomplete="off" spellcheck="false" />
+            <button class="btn primary" type="submit">Add site</button>
+          </form>
+          <div class="field-error" id="add-domain-error" hidden></div>
+
+          <div class="panel flush">
+            <div class="table-head">
+              <span class="label">Domain</span>
+              <span class="label" id="sites-count"></span>
+            </div>
+            <ul class="site-list" id="domain-list"></ul>
+            <div class="empty" id="empty-msg" hidden>
+              No sites yet. Add one above, or use the toolbar button on the site you want to reach.
+            </div>
+          </div>
+
+          <div class="backup-row">
+            <span class="dot" id="backup-dot"></span>
+            <span class="backup-text">
+              <span id="backup-text">Checking backup…</span>
+              <span class="faint mono" id="backup-path"></span>
+            </span>
+            <button class="btn small" id="restore-btn" title="Add any sites from the backup that aren't in the list">Restore from backup</button>
+          </div>
+        </section>
+
+        <!-- ============ Server ============ -->
+        <section class="view" data-view="server">
+          <header class="view-head">
+            <div>
+              <h1>Server</h1>
+              <p>The local SOCKS5 proxy the extension routes sites through, and how it's started.</p>
+            </div>
+          </header>
+
+          <div class="problem callout err" hidden>
+            <div>
+              <div class="title problem-title"></div>
+              <div class="fix problem-fix"></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <span class="label">Status</span>
+              <span class="status-inline"><span class="dot server-dot"></span><span class="server-text"></span></span>
+            </div>
+            <div class="form-row">
+              <label for="serverBackend">Backend</label>
+              <select id="serverBackend" class="select">
+                <option value="codespace">GitHub Codespace</option>
+                <option value="tunnel">SSH tunnel to VPS</option>
+              </select>
+              <span class="hint mono" id="backend-hint"></span>
+            </div>
+            <div class="actions">
+              <button class="btn primary" data-action="start">Start</button>
+              <button class="btn danger" data-action="stop">Stop</button>
+              <button class="btn" data-action="test">Test</button>
+              <button class="btn" data-action="cancel">Cancel</button>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head"><span class="label">Endpoint</span></div>
+            <p class="panel-desc">Where the browser sends proxied sites. For the netproxy server this is SOCKS5 on 127.0.0.1:1080.</p>
+            <form class="endpoint" id="endpoint-form">
+              <div>
+                <label for="proxyScheme">Type</label>
+                <select id="proxyScheme" class="select">
+                  <option value="socks5">SOCKS5</option>
+                  <option value="http">HTTP</option>
+                  <option value="https">HTTPS</option>
+                </select>
+              </div>
+              <div class="grow">
+                <label for="proxyHost">Host</label>
+                <input id="proxyHost" class="input mono" type="text" placeholder="127.0.0.1" spellcheck="false" />
+              </div>
+              <div>
+                <label for="proxyPort">Port</label>
+                <input id="proxyPort" class="input mono port" type="number" min="1" max="65535" placeholder="1080" />
+              </div>
+              <button class="btn" type="submit">Save</button>
+              <span class="saved mono" id="saved-msg">saved</span>
+            </form>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head"><span class="label">Notifications</span></div>
+            <label class="toggle-row">
+              <span>
+                Desktop notifications
+                <span class="muted">— when the server starts, stops, fails, or drops unexpectedly</span>
+              </span>
+              <span class="switch"><input type="checkbox" id="notifications" /><span></span></span>
+            </label>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <span class="label">Server control helper</span>
+              <span class="tag" id="helper-tag"></span>
+            </div>
+            <p class="panel-desc">
+              Starting the server from the browser needs a small helper registered once per browser. Run from the repo root, then reload
+              the extension:
+            </p>
+            <div class="cmd-row">
+              <code id="install-cmd"></code>
+              <button class="btn small" id="copy-install">Copy</button>
+            </div>
+          </div>
+
+          <div class="panel flush">
+            <div class="table-head">
+              <span class="label">Server log · logs/netproxy.log</span>
+              <span class="label" id="server-log-status"></span>
+            </div>
+            <pre class="terminal" id="server-log-box"></pre>
+          </div>
+        </section>
+
+        <!-- ============ Diagnostics ============ -->
+        <section class="view" data-view="diagnostics">
+          <header class="view-head">
+            <div>
+              <h1>Diagnostics</h1>
+              <p>Checks every link between this browser and the proxy, and says how to fix what's broken.</p>
+            </div>
+            <button class="btn primary" id="diagnose-btn">Run checks</button>
+          </header>
+
+          <div class="panel flush">
+            <div class="table-head">
+              <span class="label">Checks</span>
+              <span class="label" id="diag-summary"></span>
+            </div>
+            <ul class="checks" id="diag-results"></ul>
+            <div class="empty" id="diag-empty">Not run yet.</div>
+          </div>
+        </section>
+
+        <!-- ============ Logs ============ -->
+        <section class="view view-fill" data-view="logs">
+          <header class="view-head">
+            <div>
+              <h1>Logs</h1>
+              <p>Everything the extension and the server did, newest at the bottom.</p>
+            </div>
+            <div class="head-actions">
+              <button class="btn" id="copy-log-btn">Copy</button>
+              <button class="btn" id="download-log-btn">Download</button>
+              <button class="btn danger" id="clear-log-btn">Clear</button>
+            </div>
+          </header>
+
+          <div class="log-toolbar">
+            <div class="segmented" id="log-filter">
+              <button data-filter="all" class="active">All</button>
+              <button data-filter="errors">Errors</button>
+              <button data-filter="SERVER">Server</button>
+              <button data-filter="PROXY">Proxy</button>
+              <button data-filter="NAV">Navigation</button>
+              <button data-filter="DOMAIN|TOGGLE">Sites</button>
+              <button data-filter="DEV|INFO|WARN">Other</button>
+            </div>
+            <input id="log-search" class="input" type="search" placeholder="Filter…" spellcheck="false" />
+            <span class="faint mono" id="log-count"></span>
+          </div>
+          <div class="panel flush log-panel">
+            <div class="log" id="log-box"></div>
+          </div>
+        </section>
+
+        <!-- ============ Admin ============ -->
+        <section class="view" data-view="admin">
+          <header class="view-head">
+            <div>
+              <h1>Admin <span class="tag warn">Dev</span></h1>
+              <p>Fake errors and states for checking error handling and styling. Simulations expire or can be cleared at any time.</p>
+            </div>
+            <button class="btn" id="admin-clear-all">Clear all simulations</button>
+          </header>
+
+          <div class="panel">
+            <div class="panel-head">
+              <span class="label">UI state override</span>
+              <span class="label" id="override-active"></span>
+            </div>
+            <p class="panel-desc">
+              Replaces the real server status everywhere (popup, badge, dashboard) with a canned one. Nothing real is started or
+              stopped; background checks are paused while it's on.
+            </p>
+            <div class="preset-grid" id="preset-grid"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <span class="label">Helper faults</span>
+              <span class="label" id="fault-active"></span>
+            </div>
+            <p class="panel-desc">
+              Makes the real helper misbehave, so the whole pipeline runs: native messaging, job tracking, log streaming, error
+              mapping, notifications. Job faults replace the start/stop/test scripts with a fake — your actual server isn't
+              touched. Faults expire after 10 minutes.
+            </p>
+            <div class="fault-list" id="fault-list"></div>
+          </div>
+
+          <div class="grid-2">
+            <div class="panel">
+              <div class="panel-head"><span class="label">Notifications</span></div>
+              <p class="panel-desc">Fires even if notifications are turned off.</p>
+              <div class="btn-wrap">
+                <button class="btn small" data-notify="startOk">Start succeeded</button>
+                <button class="btn small" data-notify="startFail">Start failed</button>
+                <button class="btn small" data-notify="stopOk">Stopped</button>
+                <button class="btn small" data-notify="testOk">Test passed</button>
+                <button class="btn small" data-notify="drop">Unexpected drop</button>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="panel-head"><span class="label">Toolbar badge</span></div>
+              <p class="panel-desc">Shown until the next status check (≤ 1 min).</p>
+              <div class="btn-wrap">
+                <button class="btn small" data-badge="on">ON</button>
+                <button class="btn small" data-badge="off">OFF</button>
+                <button class="btn small" data-badge="busy">…</button>
+                <button class="btn small" data-badge="error">!</button>
+                <button class="btn small" data-badge="none">None</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="panel">
+              <div class="panel-head"><span class="label">Log generator</span></div>
+              <p class="panel-desc">Writes to the real extension log (capped at 1000 entries).</p>
+              <div class="btn-wrap">
+                <button class="btn small" data-logs="sample">One of each category</button>
+                <button class="btn small" data-logs="burst" data-count="100">Burst ×100</button>
+                <button class="btn small" data-logs="burst" data-count="1000">Burst ×1000</button>
+                <button class="btn small" data-logs="long">Very long line</button>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="panel-head"><span class="label">Events</span></div>
+              <p class="panel-desc">Runs the real handlers with fake input.</p>
+              <div class="btn-wrap">
+                <button class="btn small" id="sim-drop">Unexpected server drop</button>
+                <button class="btn small" id="sim-proxy-error">Browser proxy error</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
     </div>
+    <div class="toast" id="toast" hidden></div>
   </body>
   <script src="common.js"></script>
   <script src="options.js"></script>
+  <script src="admin.js"></script>
 </html>

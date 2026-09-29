@@ -2,8 +2,9 @@
   "manifest_version": 3,
   "name": "Escape Hatch",
   "version": "1.0.0",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnXfosQq9pAJpZcZsttK1XnrEBHEHneG2OGxCPKaZrt97yQTRIrZYuqeQqZbsDkxjC0yHbmb+OH6V4ax0iKs4HuXWUy+hjczEzNAfTQsZ360Fl1PHLNxkijag2N+ZAIeWw1sPLJPJVItcQRLERyGIQvk8tpwEtlvDy19r8PjiCaeAxyWoV0e0h8HfAuFrqsKJikCiBlpAMToQE/5A+z6Q7n/DOzUYHWIBlFRWjKJMPoEX1xhhUJ07obsPYQZFcHNjJ9isw1IQUszC4U1ybnakRiImOXD3hPdXJzNm2+mRD4BIVQbzq+ojjDUbfQPStUIMYX/wQzq8IZvnDbQXJri+6wIDAQAB",
   "description": "Route specific sites through a proxy without staying on a full VPN.",
-  "permissions": ["storage", "proxy", "tabs", "scripting", "webNavigation"],
+  "permissions": ["storage", "proxy", "tabs", "scripting", "webNavigation", "nativeMessaging", "alarms", "notifications"],
   "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "background.js"

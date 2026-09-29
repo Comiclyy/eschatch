@@ -2,50 +2,169 @@
 <html>
   <head>
     <meta charset="utf-8" />
+    <link rel="stylesheet" href="ui.css" />
     <style>
       body {
-        font-family: system-ui, sans-serif;
-        width: 260px;
-        padding: 12px;
-        margin: 0;
+        width: 300px;
       }
-      h1 {
-        font-size: 14px;
-        margin: 0 0 8px;
+      header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        height: 42px;
+        padding: 0 14px;
+        border-bottom: 1px solid var(--line);
+      }
+      header img {
+        width: 16px;
+        height: 16px;
+        border-radius: 4px;
+      }
+      header .name {
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+      header .pill {
+        margin-left: auto;
+      }
+      section {
+        padding: 12px 14px 14px;
+      }
+      section + section {
+        border-top: 1px solid var(--line);
+      }
+      .section-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 8px;
       }
       #domain {
-        font-weight: 600;
+        font: 500 14px var(--mono);
+        letter-spacing: -0.01em;
         word-break: break-all;
       }
-      #status {
-        margin: 8px 0;
-        font-size: 13px;
-        color: #555;
-      }
-      button {
-        width: 100%;
-        padding: 8px;
-        font-size: 13px;
-        cursor: pointer;
-      }
-      #no-config {
+      #route {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin: 3px 0 11px;
+        color: var(--text-2);
         font-size: 12px;
-        color: #a33;
-        margin-top: 8px;
       }
-      a {
-        font-size: 12px;
+      #route .dot {
+        width: 6px;
+        height: 6px;
+        box-shadow: none;
+      }
+      .callout {
+        margin-bottom: 10px;
+      }
+      #server-line {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      #server-meta {
+        margin: 3px 0 11px 15px;
+        color: var(--text-3);
+        font: 11px var(--mono);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .row {
+        display: flex;
+        gap: 6px;
+      }
+      .row .btn:first-child {
+        flex: 1;
+      }
+      #server-last {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin-top: 10px;
+        padding-left: 8px;
+        border-left: 2px solid var(--cat, var(--line-strong));
+        color: var(--text-3);
+        font: 10.5px/1.5 var(--mono);
+        word-break: break-all;
+      }
+      footer {
+        display: flex;
+        gap: 2px;
+        padding: 6px 8px;
+        border-top: 1px solid var(--line);
+        background: var(--bg-raised);
+      }
+      footer .btn {
+        flex: 1;
+        font-weight: 400;
       }
     </style>
   </head>
-  <body>
-    <h1>Escape Hatch</h1>
-    <div id="domain">loading...</div>
-    <div id="status"></div>
-    <button id="toggle-btn">Toggle proxy for this site</button>
-    <div id="no-config" hidden>
-      No proxy endpoint set. <a href="#" id="open-options">Open options</a>
+  <body class="preload">
+    <header>
+      <img src="icons/icon48.png" alt="" />
+      <span class="name">Escape Hatch</span>
+      <span id="header-pill" class="pill"><span class="dot"></span><span id="header-pill-text">…</span></span>
+    </header>
+
+    <div id="sim-banner" class="callout sim" style="margin: 10px 14px 0" hidden>
+      <div>
+        <div class="title">Simulated state</div>
+        <div class="fix">Set from the dashboard's Admin tab. <a href="#" id="clear-sim">Clear</a></div>
+      </div>
     </div>
+
+    <section>
+      <div class="section-head"><span class="label">Current site</span></div>
+      <div id="domain">…</div>
+      <div id="route"><span class="dot" id="route-dot"></span><span id="route-text"></span></div>
+      <div id="site-warning" class="callout warn" hidden>
+        <div>
+          <div class="title">This site won't load</div>
+          <div class="fix">It's routed through the proxy, but the proxy server is stopped.</div>
+        </div>
+      </div>
+      <div id="no-config" class="callout warn" hidden>
+        <div>
+          <div class="title">No proxy endpoint set</div>
+          <div class="fix"><a href="#" id="open-options">Set it in the dashboard →</a></div>
+        </div>
+      </div>
+      <button id="toggle-btn" class="btn primary block">Route through proxy</button>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <span class="label">Server</span>
+        <span class="label" id="server-backend"></span>
+      </div>
+      <div id="server-line">
+        <span id="server-dot" class="dot"></span><span id="server-text">Checking…</span>
+      </div>
+      <div id="server-meta"></div>
+      <div id="server-problem" class="callout err" hidden>
+        <div>
+          <div class="title" id="problem-title"></div>
+          <div class="fix" id="problem-fix"></div>
+        </div>
+      </div>
+      <div class="row">
+        <button id="server-btn" class="btn" disabled>Start server</button>
+        <button id="test-btn" class="btn" title="Check traffic exits through the proxy">Test</button>
+      </div>
+      <div id="server-last"></div>
+    </section>
+
+    <footer>
+      <button class="btn ghost small" data-open="overview">Dashboard</button>
+      <button class="btn ghost small" data-open="diagnostics">Diagnose</button>
+      <button class="btn ghost small" data-open="logs">Logs</button>
+    </footer>
   </body>
   <script src="common.js"></script>
   <script src="popup.js"></script>
