@@ -85,7 +85,7 @@ The helper is registered by `native-host/install.sh` under the name
 | Command | Reply |
 | --- | --- |
 | `ping` | Helper version. |
-| `status` | `listening` (port open), `socksOk` (real SOCKS5 handshake), running `job`, `lastJob` with exit code, codespace name. |
+| `status` | `listening` (port open), `socksOk` (real SOCKS5 handshake), running `job`, `lastJob` with exit code, codespace name, and `codespaceState` from GitHub (cached; see below). |
 | `start` / `stop` / `test` | Starts the backend's script **detached** and returns immediately with the job. |
 | `cancel` | Kills the running job's whole process group. |
 | `log` `{lines, offset}` | Last N lines, or only what was appended since a byte offset. |
@@ -179,3 +179,4 @@ Session storage is cleared when the browser quits.
 | `/tmp/escapehatch-tunnel.pid` | The `ssh -D` process (tunnel backend). |
 | `/tmp/escapehatch-netproxy-job.json` / `.exit` | Current/last job and its exit code. |
 | `/tmp/escapehatch-netproxy-fault.json` | Armed Admin fault, if any. |
+| `/tmp/escapehatch-codespace-state.json` | Cached codespace state for the icon dot: re-checked after 60 s, or 8 s while starting/stopping or in an in-between state; cleared whenever a job starts. |

@@ -76,6 +76,7 @@ async function renderServer() {
   $("server-backend").textContent = state?.backend ? `${state.backend}${state.port ? ` · :${state.port}` : ""}` : "";
   const meta = [];
   if (state?.codespace) meta.push(state.codespace);
+  if (state?.codespaceState) meta.push(`codespace ${describeCodespaceState(state.codespaceState)}`);
   if (state?.listening && state.upSince) meta.push(formatUptime(state.upSince));
   if (state?.job?.simulated) meta.push(`simulated: ${state.job.simulated}`);
   $("server-meta").textContent = meta.join(" · ");

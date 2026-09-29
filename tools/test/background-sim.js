@@ -52,6 +52,7 @@ const host = {
   logLines: [],
   missing: false,
   fault: null,
+  codespaceState: "Shutdown",
   backup: null, // what's in ~/.config/eschatch/settings.json
   saves: 0,
   calls: []
@@ -59,6 +60,7 @@ const host = {
 
 const notifications = [];
 const badges = [];
+const icons = [];
 
 var chrome = {
   storage: { sync: area("sync"), local: area("local"), session: area("session"), onChanged: event() },
@@ -103,7 +105,7 @@ var chrome = {
           }
           return {
             ok: true, listening: host.listening, socksOk: host.listening, port: 1080,
-            job: host.job, lastJob: host.lastJob, codespace: "cs-test", backend: "codespace"
+            job: host.job, lastJob: host.lastJob, codespace: "cs-test", codespaceState: host.codespaceState, backend: "codespace"
           };
         case "start":
         case "stop":
@@ -130,7 +132,8 @@ var chrome = {
   commands: { onCommand: event() },
   action: {
     setBadgeText: async ({ text }) => badges.push(text),
-    setBadgeBackgroundColor: async () => {}
+    setBadgeBackgroundColor: async () => {},
+    setIcon: async (details) => icons.push(details)
   },
   notifications: { create: (o) => notifications.push(`${o.title} | ${o.message}`), onClicked: event(), clear() {} },
   alarms: { get: async () => null, create: async () => {}, onAlarm: event() }

@@ -137,6 +137,12 @@ function explainServerError(raw) {
   return { title: error || "Unknown error", fix: "Run the Diagnostics tab in the dashboard for details.", raw: error };
 }
 
+// GitHub's codespace states in plain words.
+function describeCodespaceState(state) {
+  if (!state) return null;
+  return { Available: "running", Shutdown: "shut down", ShuttingDown: "shutting down", Starting: "starting" }[state] || state.toLowerCase();
+}
+
 function formatElapsed(seconds) {
   seconds = Math.max(0, Math.round(seconds));
   return seconds < 60 ? `${seconds}s` : `${Math.floor(seconds / 60)}m ${seconds % 60}s`;

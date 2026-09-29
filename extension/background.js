@@ -155,6 +155,55 @@ async function setBadge(kind) {
 async function updateBadge(state) {
   const { domains } = await getConfig();
   await setBadge(badgeKind(state, domains.length));
+  await updateIconDot(state);
+}
+
+// Dot in the icon's top-right corner: the codespace's own state from GitHub,
+// separate from the ON/OFF badge (which is about the proxy). The codespace
+// can be running, using free hours, while the proxy is off.
+function codespaceDotColor(codespaceState) {
+  if (!codespaceState) return null; // no codespace (SSH tunnel backend) or unknown
+  if (codespaceState === "Available") return "#2fb36d";
+  if (codespaceState === "Shutdown" || codespaceState === "Archived") return "#e5484d";
+  return "#e0a84a"; // Starting, ShuttingDown, Queued, Rebuilding, ...
+}
+
+let lastIconDot; // undefined until first set, so a restarted worker always redraws
+let baseIconBitmap = null;
+
+async function updateIconDot(state) {
+  const color = state && !state.error ? codespaceDotColor(state.codespaceState) : null;
+  if (color === lastIconDot) return;
+  lastIconDot = color;
+  if (!color || typeof OffscreenCanvas === "undefined") {
+    await chrome.action.setIcon({ path: { 16: "icons/icon16.png", 48: "icons/icon48.png", 128: "icons/icon128.png" } });
+    return;
+  }
+  if (!baseIconBitmap) {
+    const blob = await (await fetch(chrome.runtime.getURL("icons/icon128.png"))).blob();
+    baseIconBitmap = await createImageBitmap(blob);
+  }
+  const imageData = {};
+  for (const size of [16, 32]) {
+    const canvas = new OffscreenCanvas(size, size);
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(baseIconBitmap, 0, 0, size, size);
+    const r = size * 0.2;
+    const cx = size - r - size * 0.03;
+    const cy = r + size * 0.03;
+    // Cut a transparent ring around the dot so it reads against the blue icon.
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.beginPath();
+    ctx.arc(cx, cy, r + size * 0.08, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.globalCompositeOperation = "source-over";
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, 2 * Math.PI);
+    ctx.fillStyle = color;
+    ctx.fill();
+    imageData[size] = ctx.getImageData(0, 0, size, size);
+  }
+  await chrome.action.setIcon({ imageData });
 }
 
 async function reportUnexpectedDrop() {
@@ -189,6 +238,7 @@ async function refreshServerStatus() {
         port: res.port,
         job: res.job,
         codespace: res.codespace,
+        codespaceState: res.codespaceState,
         backend: res.backend
       }
     : { error: res.error };

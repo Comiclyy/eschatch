@@ -47,6 +47,12 @@ HOST_FAULTS = {"host-crash", "host-garbage", "host-slow", "status-error"}
 SETTINGS_DIR = os.path.expanduser("~/.config/eschatch")
 SETTINGS_FILE = os.path.join(SETTINGS_DIR, "settings.json")
 
+# The codespace's own state (Available, Shutdown, ...) from GitHub, cached so
+# the frequent status checks don't each make a network call.
+CODESPACE_STATE_CACHE = "/tmp/escapehatch-codespace-state.json"
+CODESPACE_STATE_TTL = 60
+CODESPACE_STATE_TTL_BUSY = 8  # while a start/stop runs, the state changes quickly
+
 LOG_MAX_BYTES = 1024 * 1024
 HOST_LOG_MAX_BYTES = 256 * 1024
 
@@ -189,6 +195,32 @@ def last_job():
         return None
 
 
+def codespace_state(name, busy):
+    """GitHub's state for the codespace, or None if unknown."""
+    if not name:
+        return None
+    try:
+        with open(CODESPACE_STATE_CACHE) as f:
+            cached = json.load(f)
+        settled = cached.get("state") in ("Available", "Shutdown")
+        ttl = CODESPACE_STATE_TTL if settled and not busy else CODESPACE_STATE_TTL_BUSY
+        if cached.get("name") == name and time.time() - cached.get("at", 0) < ttl:
+            return cached.get("state")
+    except (OSError, ValueError):
+        pass
+    gh = shutil.which("gh", path=SEARCH_PATH)
+    if not gh:
+        return None
+    code, out = run_quiet([gh, "api", f"/user/codespaces/{name}", "--jq", ".state"], 8)
+    state = out.strip() if code == 0 and out.strip() else None
+    try:
+        with open(CODESPACE_STATE_CACHE, "w") as f:
+            json.dump({"name": name, "state": state, "at": time.time()}, f)
+    except OSError:
+        pass
+    return state
+
+
 def status(backend, port):
     cfg = BACKENDS[backend]
     codespace = None
@@ -208,6 +240,7 @@ def status(backend, port):
         "job": current_job(),
         "lastJob": last_job(),
         "codespace": codespace if backend == "codespace" else None,
+        "codespaceState": codespace_state(codespace, busy=bool(current_job())) if backend == "codespace" else None,
     }
 
 
@@ -260,6 +293,10 @@ def run_job(backend, action):
     append_log(f"[extension] {action} requested ({backend} backend)")
     try:
         os.remove(JOB_EXIT_FILE)
+    except OSError:
+        pass
+    try:
+        os.remove(CODESPACE_STATE_CACHE)
     except OSError:
         pass
 

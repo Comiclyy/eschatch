@@ -14,8 +14,8 @@ Every Admin action is logged under the `DEV` category.
 
 ## UI state override
 
-Replaces the real server status **everywhere** (popup, badge, dashboard) with
-a canned one. Nothing real is started or stopped. Real health checks are
+Replaces the real server status **everywhere** (popup, badge, icon dot,
+dashboard) with a canned one. Nothing real is started or stopped. Real health checks are
 paused while it's on, so the fake state isn't overwritten and doesn't trigger
 drop alerts.
 

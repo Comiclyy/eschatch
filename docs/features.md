@@ -46,6 +46,24 @@ The badge shows proxy state without opening anything:
 | **!** (red) | The extension can't reach the helper; see [Errors](errors.md#server-control-unavailable). |
 | *(none)* | Status not checked yet (e.g. right after the browser starts). |
 
+### Icon dot
+
+A small dot in the icon's top-right corner shows the **codespace's** own state
+as GitHub reports it. It's separate from the badge, which is about the proxy:
+the codespace can be running, and using your free hours, while the proxy is
+off.
+
+| Dot | Codespace |
+| --- | --- |
+| Green | Running (`Available`). |
+| Red | Shut down. |
+| Amber | Starting, shutting down, or another in-between state. |
+| *(none)* | SSH-tunnel backend (there's no codespace), or the state is unknown. |
+
+The state is checked with GitHub at most once a minute, or every few seconds
+while it's changing. The Overview's *Codespace state* row and the popup's
+details line show the same thing in words.
+
 ## Dashboard
 
 Open it by right-clicking the icon and choosing **Options**, or with the

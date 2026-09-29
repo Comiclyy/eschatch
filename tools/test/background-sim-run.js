@@ -56,6 +56,18 @@
   await send({ type: "serverStatus" });
   check("badge shows OFF even with no sites", badges[badges.length - 1] === "OFF", badges.slice(-3).join(","));
 
+  // --- Icon dot follows the codespace's own state.
+  check("dot colors: running green, shut down red, changing amber, none for tunnel",
+    codespaceDotColor("Available") === "#2fb36d" && codespaceDotColor("Shutdown") === "#e5484d" &&
+    codespaceDotColor("Starting") === "#e0a84a" && codespaceDotColor(null) === null);
+  host.codespaceState = "Available";
+  await send({ type: "serverStatus" });
+  check("codespace state reaches the UI state", stores.session.serverState.codespaceState === "Available");
+  const iconCalls = icons.length;
+  await send({ type: "serverStatus" });
+  check("icon isn't redrawn when nothing changed", icons.length === iconCalls);
+  host.codespaceState = "Shutdown";
+
   // Reset for the server scenarios below.
   stores.sync = { domains: ["example.com"] };
   stores.local.eventLog = [];

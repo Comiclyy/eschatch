@@ -85,6 +85,7 @@ function renderServer() {
   const kv = [
     ["Backend", state?.backend || "—"],
     ["Codespace", state?.codespace || "—"],
+    ["Codespace state", describeCodespaceState(state?.codespaceState) || "—"],
     ["Port", state?.port ? `127.0.0.1:${state.port}` : "—"],
     ["SOCKS5 handshake", state?.listening ? (state.socksOk ? "ok" : "no answer") : "—"],
     ["Up since", state?.listening && state.upSince ? `${new Date(state.upSince).toLocaleTimeString([], { hour12: false })} (${timeAgo(state.upSince).replace(" ago", "")})` : "—"]
